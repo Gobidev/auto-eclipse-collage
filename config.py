@@ -1,10 +1,5 @@
-excluded = []
-for n in range(1, 12):
-    if n < 10:
-        excluded.append("Mond_00" + str(n) + ".CR2")
-    else:
-        excluded.append("Mond_0" + str(n) + ".CR2")
-        
+
+#Specify images not to use
 custom = [63,
           145,
           170,
@@ -27,10 +22,18 @@ custom = [63,
           492,
           525]
 
-for element in custom:
-    if element < 10:
-        excluded.append("Mond_00" + str(element) + ".CR2")
-    elif element < 100:
-        excluded.append("Mond_0" + str(element) + ".CR2")
-    else:
-        excluded.append("Mond_" + str(element) + ".CR2")
+
+def generate(index):
+    global custom
+    
+    excluded = []
+    
+    for element in custom:
+        if element < 10:
+            excluded.append(index + "00" + str(element) + ".CR2")
+        elif element < 100:
+            excluded.append(index + "0" + str(element) + ".CR2")
+        else:
+            excluded.append(index + str(element) + ".CR2")
+
+    return excluded
