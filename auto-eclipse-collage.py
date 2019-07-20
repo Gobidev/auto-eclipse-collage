@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import threading
+import config
 
 
 # Return a dictionary containing dates of last change of files
@@ -151,6 +152,7 @@ def to_jpg(file_names):
 
 # Adding images to one
 def combine_images_downscale(file_name_list, grid_width, grid_height, factor):
+    global progressbar
     images = []
     for file_name in file_name_list:
         image = Image.open(file_name)
@@ -159,7 +161,9 @@ def combine_images_downscale(file_name_list, grid_width, grid_height, factor):
         image = image.resize((round(size_x / factor), round(size_y / factor)), Image.ANTIALIAS)
         images.append(image)
 
-        print(str(round(file_name_list.index(file_name) / len(file_name_list), 4) * 100) + "%")
+        percentage = file_name_list.index(file_name) / len(file_name_list) * 100
+        print(str(percentage) + "%")
+        progressbar.config(value=percentage)
 
     output_width = images[0].size[0] * grid_width
     output_height = images[0].size[1] * grid_height
@@ -179,65 +183,110 @@ def combine_images_downscale(file_name_list, grid_width, grid_height, factor):
             y_offset += image.size[1]
             x_offset = 0
             column = 0
-        print(str(round(images.index(image) / len(images), 4) * 100) + "%")
+            
+        percentage = images.index(image) / len(images) * 100
+        print(str(percentage) + "%")
+        progressbar.config(value=percentage)
 
     output.save("output" + str(grid_width) + "x" + str(grid_height) + ".jpg")
     print("Done!")
 
 
+def run(file_index, first_image_number, last_image_number,
+        output_width, output_height, downscale_factor, excluded):
+    file_name_list = calculate(output_width * output_height, get(file_names(file_index,
+                                                                        last_image_number,
+                                                                        first_image_number,
+                                                                        "CR2", excluded)))
+    file_name_list = to_jpg(file_name_list)
+    combine_images_downscale(file_name_list, output_width, output_height, downscale_factor)
+
+
 # GUI
-def gui():
+def start_button():
+    threading.Thread(target=start_button_execute).start()
+
+def start_button_execute():
+    global downscale, progressbar
+    downscale_var = downscale.get()
+    # Reading information
+    file_index = file_index_entry.get()
+    first_image_number = first_image_entry.get()
+    first_image_number = int(first_image_number)
+    last_image_number = last_image_entry.get()
+    last_image_number = int(last_image_number)
+    output_width = width_combobox.get()
+    output_width = int(output_width)
+    output_height = height_combobox.get()
+    output_height = int(output_height)
+    if downscale_var == 1:
+        factor = round(max(output_width, output_height) / 3)
+    else:
+        factor = 1
+
+    excluded = config.generate(file_index)
     
-    root = tk.Tk()
+    # Run
+    run(file_index, first_image_number, last_image_number,
+        output_width, output_height, factor, excluded)
 
-    # Row 0
-    file_name_lbl = ttk.Label(root, text="File Index:")
-    file_name_lbl.grid(row=0, column=0, padx=3, pady=3, sticky="e")
+    progressbar.config(value=100)
+
+
+root = tk.Tk()
+
+root.title("Auto Eclipse Collage Generator")
+
+root.resizable(False, False)
+
+# Row 0
+file_index_lbl = ttk.Label(root, text="File Index:")
+file_index_lbl.grid(row=0, column=0, padx=3, pady=3, sticky="e")
     
-    file_name_entry = ttk.Entry(root)
-    file_name_entry.grid(row=0, column=1, padx=3, pady=3, sticky="w")
+file_index_entry = ttk.Entry(root)
+file_index_entry.grid(row=0, column=1, padx=3, pady=3, sticky="w")
 
-    width_lbl = ttk.Label(root, text="Grid Width:")
-    width_lbl.grid(row=0, column=2, padx=13, pady=3, sticky="e")
+width_lbl = ttk.Label(root, text="Grid Width:")
+width_lbl.grid(row=0, column=2, padx=13, pady=3, sticky="e")
 
-    width_combobox = ttk.Combobox(root, values=[2, 5, 10, 15])
-    width_combobox.grid(row=0, column=3, padx=3, pady=3, sticky="w")
+width_combobox = ttk.Combobox(root, values=[2, 5, 10, 15])
+width_combobox.grid(row=0, column=3, padx=3, pady=3, sticky="w")
 
-    # Row 1
-    first_image_lbl = ttk.Label(root, text="First Image Number:")
-    first_image_lbl.grid(row=1, column=0, padx=3, pady=3, sticky="e")
+# Row 1
+first_image_lbl = ttk.Label(root, text="First Image Number:")
+first_image_lbl.grid(row=1, column=0, padx=3, pady=3, sticky="e")
 
-    first_image_entry = ttk.Entry(root)
-    first_image_entry.grid(row=1, column=1, padx=3, pady=3, sticky="w")
+first_image_entry = ttk.Entry(root)
+first_image_entry.grid(row=1, column=1, padx=3, pady=3, sticky="w")
 
-    height_lbl = ttk.Label(root, text="Grid Height:")
-    height_lbl.grid(row=1, column=2, padx=13, pady=3, sticky="e")
+height_lbl = ttk.Label(root, text="Grid Height:")
+height_lbl.grid(row=1, column=2, padx=13, pady=3, sticky="e")
 
-    height_combobox = ttk.Combobox(root, values=[2, 5, 10, 15])
-    height_combobox.grid(row=1, column=3, padx=3, pady=3, sticky="w")
+height_combobox = ttk.Combobox(root, values=[2, 5, 10, 15])
+height_combobox.grid(row=1, column=3, padx=3, pady=3, sticky="w")
 
-    # Row 2
-    last_image_lbl = ttk.Label(root, text="Last Image Number:")
-    last_image_lbl.grid(row=2, column=0, padx=3, pady=3, sticky="e")
+# Row 2
+last_image_lbl = ttk.Label(root, text="Last Image Number:")
+last_image_lbl.grid(row=2, column=0, padx=3, pady=3, sticky="e")
 
-    last_image_entry = ttk.Entry(root)
-    last_image_entry.grid(row=2, column=1, padx=3, pady=3, sticky="w")
+last_image_entry = ttk.Entry(root)
+last_image_entry.grid(row=2, column=1, padx=3, pady=3, sticky="w")
 
-    downscale_lbl = ttk.Label(root, text="Downscaling:")
-    downscale_lbl.grid(row=2, column=2, padx=13, pady=3, sticky="e")
+downscale_lbl = ttk.Label(root, text="Downscaling:")
+downscale_lbl.grid(row=2, column=2, padx=13, pady=3, sticky="e")
     
-    downscale = tk.IntVar()
-    downscale_checkbutton = tk.Checkbutton(root, variable=downscale)
-    downscale_checkbutton.grid(row=2, column=3, padx=3, pady=3, sticky="w")
+downscale = tk.IntVar()
+downscale_checkbutton = tk.Checkbutton(root, variable=downscale)
+downscale_checkbutton.grid(row=2, column=3, padx=3, pady=3, sticky="w")
 
-    # Row 3
-    start_button = ttk.Button(root, text="Start")
-    start_button.grid(row=3, column=3, padx=3, pady=10, ipadx=7, sticky="w")
+# Row 3
+start_button = ttk.Button(root, text="Start", command=start_button)
+start_button.grid(row=3, column=3, padx=3, pady=10, ipadx=7, sticky="w")
     
-    progressbar = ttk.Progressbar(root, mode="determinate", value=0, length=350)
-    progressbar.grid(row=3, column=0, padx=13, pady=3, columnspan=3, sticky="e")
+progressbar = ttk.Progressbar(root, mode="determinate", value=0, length=350)
+progressbar.grid(row=3, column=0, padx=13, pady=3, columnspan=3, sticky="e")
 
-    root.mainloop()
+root.mainloop()
 
 ''' 
 import excluded
@@ -253,4 +302,4 @@ for n in range(3, 30):
     file_name_list = to_jpg(file_name_list)
     combine_images_downscale(file_name_list, n, n, round(n / 3))
 '''
-gui()
+
