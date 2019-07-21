@@ -4,6 +4,7 @@ from PIL import Image
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+import webbrowser
 import threading
 
 
@@ -231,27 +232,35 @@ def start_button_run():
     global downscale, progressbar
     downscale_var = downscale.get()
     # Reading information
-    file_index = file_index_entry.get()
-    first_image_number = first_image_entry.get()
-    first_image_number = int(first_image_number)
-    last_image_number = last_image_entry.get()
-    last_image_number = int(last_image_number)
-    output_width = width_combobox.get()
-    output_width = int(output_width)
-    output_height = height_combobox.get()
-    output_height = int(output_height)
-    if downscale_var == 1:
-        factor = round(max(output_width, output_height) / 3)
-    else:
-        factor = 1
+    try:
+        file_index = file_index_entry.get()
+        first_image_number = first_image_entry.get()
+        first_image_number = int(first_image_number)
+        last_image_number = last_image_entry.get()
+        last_image_number = int(last_image_number)
+        output_width = width_combobox.get()
+        output_width = int(output_width)
+        output_height = height_combobox.get()
+        output_height = int(output_height)
+        
+        if downscale_var == 1:
+            factor = round(max(output_width, output_height) / 3)
+        else:
+            factor = 1
 
-    excluded = generate_excluded(file_index)
+        excluded = generate_excluded(file_index)
     
-    # Run
-    run(file_index, first_image_number, last_image_number,
-        output_width, output_height, factor, excluded)
+        # Run
+        run(file_index, first_image_number, last_image_number,
+            output_width, output_height, factor, excluded)
 
-    progressbar.config(value=100)
+        progressbar.config(value=100)
+    except:
+        print("Faslch")
+        
+
+def help_button_press():
+    webbrowser.open_new_tab("https://www.google.de")
 
 
 root = tk.Tk()
@@ -302,25 +311,12 @@ downscale_checkbutton.grid(row=2, column=3, padx=3, pady=3, sticky="w")
 
 # Row 3
 start_button = ttk.Button(root, text="Start", command=start_button_press)
-start_button.grid(row=3, column=3, padx=3, pady=10, ipadx=7, sticky="w")
+start_button.grid(row=3, column=3, padx=0, pady=3, ipadx=5, sticky="w")
+
+help_button = ttk.Button(root, text="?", command=help_button_press, width=2)
+help_button.grid(row=3, column=3, padx=3, pady=3, sticky="e")
     
 progressbar = ttk.Progressbar(root, mode="determinate", value=0, length=350)
 progressbar.grid(row=3, column=0, padx=13, pady=3, columnspan=3, sticky="e")
 
 root.mainloop()
-
-''' 
-import excluded
-
-output_width = 3
-output_height = 5
-file_names = calculate(output_width * output_height, get(file_names("Mond_", 563, 1, "CR2", excluded.excluded)))
-file_names = to_jpg(file_names)
-combine_images_downscale(file_names, output_width, output_height, 1)
-
-for n in range(3, 30):
-    file_name_list = calculate(n * n, get(file_names("Mond_", 563, 1, "CR2", excluded.excluded)))
-    file_name_list = to_jpg(file_name_list)
-    combine_images_downscale(file_name_list, n, n, round(n / 3))
-'''
-
