@@ -11,6 +11,8 @@
 
 To use the creator, begin with copying your image files (jpg) in the same directory where the .exe is located. Also make sure all your images are numbered, _i.e. image_001.jpg_.
 
+If there are gaps between the numbers of the images or there are ones, that you do not want to use, add the numbers of them to excluded.txt (Delete example numbers first).
+
 If there is another or no connection between the image name and the number, you can leave it as it is.
 Continue by launching the .exe file of the program. It shoud look like this:
 
@@ -25,9 +27,9 @@ Inputs are following:
 
 **Last Image Number** is the number, with that the photo-series ends.
 
-**Grid Width** changes the grid width of the output image.
+**Grid Width** changes the grid width of the output image. Any positive integer will be accepted.
 
-**Grid Height** changes the grid height of the output image.
+**Grid Height** changes the grid height of the output image. Any positive integer will be accepted.
 
 **Downscaling** -> When activated, downscales the images before combining them. Activate if you have little RAM or you are creating a huge collage
 
