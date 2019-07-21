@@ -4,6 +4,7 @@ from PIL import Image
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+from tkinter import messagebox
 import webbrowser
 import threading
 
@@ -31,11 +32,11 @@ def generate_excluded(index):
         
     for element in excluded_numbers:
         if element < 10:
-            excluded_output.append(index + "00" + str(element) + ".CR2")
+            excluded_output.append(index + "00" + str(element) + ".jpg")
         elif element < 100:
-            excluded_output.append(index + "0" + str(element) + ".CR2")
+            excluded_output.append(index + "0" + str(element) + ".jpg")
         else:
-            excluded_output.append(index + str(element) + ".CR2")
+            excluded_output.append(index + str(element) + ".jpg")
 
     excluded_file.close()    
     return excluded_output
@@ -218,7 +219,17 @@ def run(file_index, first_image_number, last_image_number,
     file_name_list = calculate(output_width * output_height, get(file_names(file_index,
                                                                         last_image_number,
                                                                         first_image_number,
-                                                                        "CR2", excluded)))
+                                                                        "jpg", excluded)))
+    # Write to file
+    info_file = open("output" + str(output_width) + "x" + str(output_height) + "_info.txt", "w")
+    if downscale_factor == 1:
+        info_file.write("No downscaling")
+    else:
+        info_file.write("Downscale factor: " + str(downscale_factor))
+    info_file.write("\n\nUsed Images:\n")
+    for file_name in file_name_list:
+        info_file.write(file_name + "\n")
+    info_file.close()
     file_name_list = to_jpg(file_name_list)
     combine_images_downscale(file_name_list, output_width, output_height, downscale_factor)
 
@@ -250,23 +261,28 @@ def start_button_run():
 
         excluded = generate_excluded(file_index)
     
-        # Run
-        run(file_index, first_image_number, last_image_number,
-            output_width, output_height, factor, excluded)
-
-        progressbar.config(value=100)
     except:
-        print("Faslch")
+        messagebox.showerror("Error", "Invalid Input. Press ? for help")
+        return False
+
+    # Run
+    run(file_index, first_image_number, last_image_number,
+        output_width, output_height, factor, excluded)
+
+    progressbar.config(value=100)
+    time.sleep(3)
+    progressbar.config(value=0)
         
 
 def help_button_press():
-    webbrowser.open_new_tab("https://www.google.de")
+    webbrowser.open_new_tab("https://www.github.com/Gobidev/auto-eclipse-collage")
 
 
 root = tk.Tk()
 
-root.title("Auto Eclipse Collage Generator")
-
+root.title("Auto Eclipse Collage Creator")
+root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file='logo.gif'))
+root.iconbitmap(default='logo.gif')
 root.resizable(False, False)
 
 # Row 0
