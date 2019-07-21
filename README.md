@@ -14,7 +14,7 @@ To use the creator, begin with copying your image files (jpg) in the same direct
 If there are gaps between the numbers of the images or there are ones, that you do not want to use, add the numbers of them to excluded.txt (Delete example numbers first).
 
 If there is another or no connection between the image name and the number, you can leave it as it is.
-Continue by launching the .exe file of the program. It shoud look like this:
+Continue by launching the .exe file of the program. It should look like this:
 
 
 ![alt text](https://raw.githubusercontent.com/Gobidev/auto-eclipse-collage/master/screenshots/gui.PNG)
