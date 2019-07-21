@@ -5,7 +5,6 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import threading
-import config
 
 
 # Return a dictionary containing dates of last change of files
@@ -18,6 +17,27 @@ def get(file_name_list):
         results[file_name] = file_time
 
     return results
+
+
+def generate_excluded(index):
+
+    excluded_numbers = []
+    excluded_output = []
+    # Open excluded file
+    excluded_file = open("excluded.txt", "r")
+    for line in excluded_file:
+        excluded_numbers.append(int(line))
+        
+    for element in excluded_numbers:
+        if element < 10:
+            excluded_output.append(index + "00" + str(element) + ".CR2")
+        elif element < 100:
+            excluded_output.append(index + "0" + str(element) + ".CR2")
+        else:
+            excluded_output.append(index + str(element) + ".CR2")
+
+    excluded_file.close()    
+    return excluded_output
 
 
 # Return a list with absolute filenames
@@ -203,10 +223,11 @@ def run(file_index, first_image_number, last_image_number,
 
 
 # GUI
-def start_button():
-    threading.Thread(target=start_button_execute).start()
+def start_button_press():
+    threading.Thread(target=start_button_run).start()
 
-def start_button_execute():
+
+def start_button_run():
     global downscale, progressbar
     downscale_var = downscale.get()
     # Reading information
@@ -224,7 +245,7 @@ def start_button_execute():
     else:
         factor = 1
 
-    excluded = config.generate(file_index)
+    excluded = generate_excluded(file_index)
     
     # Run
     run(file_index, first_image_number, last_image_number,
@@ -280,7 +301,7 @@ downscale_checkbutton = tk.Checkbutton(root, variable=downscale)
 downscale_checkbutton.grid(row=2, column=3, padx=3, pady=3, sticky="w")
 
 # Row 3
-start_button = ttk.Button(root, text="Start", command=start_button)
+start_button = ttk.Button(root, text="Start", command=start_button_press)
 start_button.grid(row=3, column=3, padx=3, pady=10, ipadx=7, sticky="w")
     
 progressbar = ttk.Progressbar(root, mode="determinate", value=0, length=350)
